@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Gate Automation System</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Gate Automation System</h1>
+            <p>Manage your gate, guests, and lights remotely for enhanced security and convenience</p>
+        </header>
+        
+        <main>
+            <!-- GPS Access Section -->
+            <section class="gps-section">
+                <h2> GPS Access</h2>
+                <p>Enable GPS functionality to automatically track the vehicle's location and control gate activation based on proximity. Configure distance thresholds for activation and monitor real-time location.</p>
+                <div class="gps-settings">
+                    <label for="distance-threshold">Distance Threshold (meters):</label>
+                    <input type="number" id="distance-threshold" name="distance-threshold" min="1" value="10" required>
+                    <button id="set-threshold" class="btn" onclick="setDistanceThreshold()">Set Threshold</button>
+                </div>
+                <div id="gps-status" class="status">
+                    <h3>GPS Status: <span id="gps-status-text">Inactive</span></h3>
+                    <button id="gps-toggle" class="btn" onclick="toggleGPS()">Enable GPS</button>
+                </div>
+                <div id="vehicle-location" class="location">
+                    <h3>Vehicle Location: <span id="location-coordinates">Not Available</span></h3>
+                </div>
+            </section>
+            <hr>
+            <!-- Add Guest Form -->
+            <section class="form-section">
+                <h2>Add Guest Schedule</h2>
+                <form id="add-guest-form" method="POST" action="/add_guest">
+                    <div class="form-group">
+                        <label for="plate">Vehicle License Plate:</label>
+                        <input type="text" id="plate" name="plate" required placeholder="Enter vehicle plate (e.g., ABC123)">
+                    </div>
+                    <div class="form-group">
+                        <label for="start-time">Start Time:</label>
+                        <input type="time" id="start-time" name="start" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end-time">End Time:</label>
+                        <input type="time" id="end-time" name="end" required>
+                    </div>
+                    <button type="submit" class="btn submit-btn">Add Guest</button>
+                </form>
+            </section>
+
+            <hr>
+            <script>
+                // Function to handle the form submission
+                document.getElementById('add-guest-form').addEventListener('submit', function(event) {
+                    event.preventDefault(); // Prevent the default form submission
+                    
+                    // Get input values
+                    const plate = document.getElementById('plate').value;
+                    const startTime = document.getElementById('start-time').value;
+                    const endTime = document.getElementById('end-time').value;
+            
+                    // Validate input
+                    if (!plate || !startTime || !endTime) {
+                        alert("All fields are required.");
+                        return;
+                    }
+            
+                    // Reference the guest table or create it if not present
+                    let guestTable = document.getElementById('guest-table');
+                    if (!guestTable) {
+                        guestTable = createGuestTable();
+                    }
+            
+                    // Add a new row to the table
+                    const tableBody = guestTable.querySelector('tbody');
+                    const row = document.createElement('tr');
+                    
+                    // Add license plate cell
+                    const plateCell = document.createElement('td');
+                    plateCell.textContent = plate;
+                    row.appendChild(plateCell);
+                    
+                    // Add start time cell
+                    const startTimeCell = document.createElement('td');
+                    startTimeCell.textContent = startTime;
+                    row.appendChild(startTimeCell);
+                    
+                    // Add end time cell
+                    const endTimeCell = document.createElement('td');
+                    endTimeCell.textContent = endTime;
+                    row.appendChild(endTimeCell);
+            
+                    // Add actions cell (Delete button)
+                    const actionsCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Remove';
+                    deleteButton.className = 'btn delete-btn';
+                    deleteButton.onclick = () => row.remove(); // Remove row on click
+                    actionsCell.appendChild(deleteButton);
+                    row.appendChild(actionsCell);
+            
+                    // Append the new row to the table
+                    tableBody.appendChild(row);
+            
+                    // Clear the form inputs
+                    document.getElementById('add-guest-form').reset();
+                });
+            
+                // Function to create the guest table if it doesn't exist
+                function createGuestTable() {
+                    // Create table structure
+                    const table = document.createElement('table');
+                    table.id = 'guest-table';
+                    table.border = '1';
+                    table.cellSpacing = '0';
+                    table.cellPadding = '5';
+                    table.style.marginTop = '20px';
+                    table.style.width = '100%';
+            
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    const headerRow = document.createElement('tr');
+                    const headers = ['License Plate', 'Start Time', 'End Time', 'Actions'];
+                    headers.forEach(headerText => {
+                        const th = document.createElement('th');
+                        th.textContent = headerText;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+            
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    table.appendChild(tbody);
+            
+                    // Append table to the section
+                    document.querySelector('.form-section').appendChild(table);
+            
+                    return table;
+                }
+            </script>
+            
+
+            <!-- Guest List -->
+            
+
+            <hr>
+
+            <!-- Smart Lighting Control -->
+            <section class="control-section">
+                <h2>Smart Lighting Control</h2>
+                <div class="lighting-buttons">
+                    <button id="lights-on" class="btn" onclick="controlLights('on')">Turn Lights ON</button>
+                    <button id="lights-off" class="btn" onclick="controlLights('off')">Turn Lights OFF</button>
+                </div>
+            </section>
+
+            <hr>
+
+
+            <!-- Additional Features -->
+            <section class="additional-features">
+                <h2>Additional Features</h2>
+                <p><strong>Voice Command Support:</strong> You can use voice commands like "Turn on the lights" for hands-free control.</p>
+                <p><strong>Real-time Notifications:</strong> Receive instant alerts when a guest is approaching or when the lights are activated.</p>
+            </section>
+
+        </main>
+        
+        <footer>
+            <div class="footer-container">
+                <div class="contact-info">
+                    <h3>Contact Us</h3>
+                    <p>Email: <a href="mailto:info@smartgate.com" class="email-link">info@smartgate.com</a></p>
+                    <p>Follow us on:</p>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/" target="_blank" class="social-icon instagram" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="mailto:info@smartgate.com" class="social-icon email" title="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-note">
+                    <p>&copy; 2024 Smart Gate Automation System | All Rights Reserved</p>
+                </div>
+            </div>
+        </footer>
+        
+    </div>
+
+    <script>
+        // Function to control lights (ON or OFF)
+        function controlLights(action) {
+            fetch(`/control_lights/${action}`)
+                .then(response => response.json())
+                .then(data => alert(data.message))
+                .catch(error => alert("Error controlling lights: " + error));
+        }
+
+        // Function to edit guest details (dummy function for now)
+        function editGuest(plate) {
+            alert('Edit guest with plate ' + plate);
+        }
+
+        // Function to delete guest (dummy function for now)
+        function deleteGuest(plate) {
+            alert('Delete guest with plate ' + plate);
+        }
+    </script>
+</body>
+</html>
